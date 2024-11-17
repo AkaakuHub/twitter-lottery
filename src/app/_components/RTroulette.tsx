@@ -53,7 +53,16 @@ const RTroulette: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "データ取得中にエラーが発生しました。");
+        if (response.status === 429 && errorData.rateLimitReset) {
+          const resetTime = new Date(errorData.rateLimitReset * 1000).toLocaleTimeString();
+          setError(`API制限に達しました。リセット時間: ${resetTime}`);
+        } else {
+          if (errorData.error) {
+            setError(errorData.error);
+          } else {
+            setError("データ取得中にエラーが発生しました。");
+          }
+        }
       }
 
       const { data, _ } = await response.json();

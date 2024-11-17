@@ -62,9 +62,15 @@ export async function POST(req: NextRequest) {
     const allData = await fetchAllRetweeters(tweetId, bearerToken);
     return NextResponse.json({ data: allData }, { status: 200 });
   } catch (err: any) {
+    const rateLimitReset = err.response?.headers?.["x-rate-limit-reset"];
+    const resetTime = rateLimitReset ? new Date(rateLimitReset * 1000).toISOString() : null;
     return NextResponse.json(
-      { error: err.message || "データ取得中にエラーが発生しました。" },
-      { status: 500 }
+      {
+        error: err.message || "データ取得中にエラーが発生しました。",
+        rateLimitReset: resetTime,
+      },
+      { status: err.response?.status || 500 }
     );
   }
+
 }
